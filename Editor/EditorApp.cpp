@@ -46,7 +46,7 @@ void EditorApp::InitScene() {
 	scene = new Scene();
 	//scene->LoadScene("./Sdasfh.scene");
 
-	Node* rootNode = new Node("Game");
+	Node* rootNode = new Node("Game", scene);
 
 	scene->RootNode = rootNode;
 
@@ -72,7 +72,7 @@ void EditorApp::InitScene() {
 
 	scene->MainCamera = gameCameracomp;
 
-	scene->CalculateAllNodes();
+	//scene->CalculateAllNodes();
 
 	//scene->SaveScene("./Sdasfh.scene");
 
@@ -134,24 +134,12 @@ void EditorApp::Start() {
 
 void EditorApp::NodeMenu() {
 	if (ImGui::MenuItem("New Empty")) {
-		Node* newObject = new Node("New Node");
-		if (selectedObject) {
-			selectedObject->AddChild(newObject);
-		}
-		else {
-			scene->RootNode->AddChild(newObject);
-		}
+		Node* newObject = new Node("New Node", selectedObject ? selectedObject : scene->RootNode);
 		selectedObject = newObject;
 	}
 	if (ImGui::MenuItem("New Cube")) {
-		Node* newObject = new Node("New Cube");
+		Node* newObject = new Node("New Cube", selectedObject ? selectedObject : scene->RootNode);
 		newObject->AddComponent(new MeshRenderer(new Mesh("./Cube.obj"), new Material()));
-		if (selectedObject) {
-			selectedObject->AddChild(newObject);
-		}
-		else {
-			scene->RootNode->AddChild(newObject);
-		}
 		selectedObject = newObject;
 	}
 	if (selectedObject) {
@@ -214,14 +202,12 @@ void EditorApp::GuiRenderPopupWindows() {
 	}
 }
 
-void EditorApp::renderObjectHierarchy(Node* object, int& id) {
-	id++;
-
+void EditorApp::renderObjectHierarchy(Node* object) {
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
 	if (object->children.empty()) flags |= ImGuiTreeNodeFlags_Leaf;
 	if (selectedObject == object) flags |= ImGuiTreeNodeFlags_Selected;
 
-	ImGui::PushID(id);
+	ImGui::PushID(object);
 	bool treeNode = ImGui::TreeNodeEx(object->name.c_str(), flags);
 	ImGui::PopID();
 
@@ -236,7 +222,7 @@ void EditorApp::renderObjectHierarchy(Node* object, int& id) {
 
 	if (treeNode) {
 		for (Node* child : object->children) {
-			renderObjectHierarchy(child, id);
+			renderObjectHierarchy(child);
 		}
 		ImGui::TreePop();
 	}
@@ -244,8 +230,7 @@ void EditorApp::renderObjectHierarchy(Node* object, int& id) {
 
 void EditorApp::GuiRenderHierarchyWindow() {
 	if (ImGui::Begin("Hierarchy")) {
-		int id = 0;
-		renderObjectHierarchy(scene->RootNode, id);
+		renderObjectHierarchy(scene->RootNode);
 	} ImGui::End();
 }
 
@@ -263,9 +248,12 @@ void EditorApp::GuiRenderInspectorWindow() {
 
 			for (Component* component : selectedObject->components) {
 				ComponentTypeInfo info = component->GetInfo();
+				ImGui::PushID(component);
 				ImGui::Text(info.name.c_str());
+				ImGui::PopID();
 				for (const ComponentFieldInfo& field : info.fields) {
 					void* fieldptr = (char*)component + field.offset;
+					ImGui::PushID(fieldptr);
 					switch (field.type) {
 						case InputType::Float:
 							ImGui::DragFloat(field.name.c_str(), (float*)fieldptr, field.step);
@@ -285,10 +273,24 @@ void EditorApp::GuiRenderInspectorWindow() {
 						case InputType::Vector2:
 							ImGui::DragFloat3(field.name.c_str(), &((Vector2*)fieldptr)->x, field.step);
 							break;
-						
 					}
+					ImGui::PopID();
 				}
 				ImGui::Separator();
+			}
+
+			if (ImGui::Button("Add Component")) {
+				ImGui::OpenPopup("Add Component Popup");
+			}
+
+			if (ImGui::BeginPopup("Add Component Popup")) {
+				for (auto& [name, factory] : ComponentRegistry::Get()) {
+					if (ImGui::MenuItem(name.c_str())) {
+						Component* c = factory();
+						selectedObject->AddComponent(c);
+					}
+				}
+				ImGui::EndPopup();
 			}
 
 			/*if (auto meshRenderer = selectedObject->GetComponent<MeshRenderer>(); meshRenderer) {

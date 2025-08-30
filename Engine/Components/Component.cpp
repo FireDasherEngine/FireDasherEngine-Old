@@ -7,11 +7,6 @@ void Component::Start() {}
 void Component::Update() {}
 //ComponentTypeInfo Component::GetInfo() const { return {"Unknown Component"}; }
 
-
-#include "Camera.hpp"
-#include "MeshRenderer.hpp"
-class Camera;
-class MeshRenderer;
 /*std::map<std::string, ComponentTypeInfo> ComponentRegistry::components = {
 	{"Camera",
 		{"Camera",

@@ -1,4 +1,7 @@
 #include "Renderer3D.hpp"
+
+#include "Components/Camera.hpp"
+
 #include "Components/MeshRenderer.hpp"
 
 Renderer3D::Renderer3D() {

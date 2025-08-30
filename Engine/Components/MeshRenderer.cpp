@@ -17,6 +17,7 @@ void MeshRenderer::Render(Shader* shader) {
 
 	material->texture.Use();
 
-	glBindVertexArray(mesh->VAO);
+	mesh->Use();
 	glDrawElements(GL_TRIANGLES, (GLsizei)mesh->triangles.size(), GL_UNSIGNED_INT, (void*)0);
 }
+RegisterComponent(MeshRenderer);

@@ -4,8 +4,9 @@
 #include "Mesh/Mesh.hpp"
 #include "Mesh/Material.hpp"
 
-RegisterComponent class MeshRenderer : public Component {
+RegisterComponentFields class MeshRenderer : public Component {
 	public:
+		MeshRenderer() {};
 		MeshRenderer(Mesh* mesh, Material* material);
 		~MeshRenderer();
 		Mesh* mesh = nullptr;

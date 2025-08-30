@@ -35,7 +35,7 @@ class EditorApp {
 	private:
 		void InitScene();
 
-		void renderObjectHierarchy(Node* object, int& id);
+		void renderObjectHierarchy(Node* object);
 
 		void CameraMoveControls();
 		void NodeMenu();

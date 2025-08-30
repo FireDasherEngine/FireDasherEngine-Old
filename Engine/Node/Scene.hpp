@@ -1,7 +1,12 @@
 #pragma once
 
 #include "Node.hpp"
-#include "Components/Camera.hpp"
+//#include "Components/Camera.hpp"
+#include <string>
+#include <vector>
+
+class Node;
+class Camera;
 
 class Scene {
 	public:

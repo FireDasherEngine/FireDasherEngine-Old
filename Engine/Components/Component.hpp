@@ -6,9 +6,10 @@
 #include <string>
 
 #define EditorField
-#define RegisterComponent
+#define RegisterComponentFields
 
 class Node;
+class ComponentRegistry;
 
 class Component {
 	public:

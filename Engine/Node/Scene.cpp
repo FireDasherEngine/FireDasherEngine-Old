@@ -1,6 +1,8 @@
 #include "Scene.hpp"
 #include <fstream>
 
+#include "Components/Camera.hpp"
+
 // write whatever the cast turns it into
 #define w(data) file.write(reinterpret_cast<const char*>(&data), sizeof(data));
 // write a string

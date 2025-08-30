@@ -148,3 +148,7 @@ Mesh::~Mesh() {
 	EBO = 0;
 	VAO = 0;
 }
+
+void Mesh::Use() const {
+	glBindVertexArray(VAO);
+}

@@ -2,7 +2,7 @@
 
 #include "Component.hpp"
 
-RegisterComponent class Camera : public Component {
+RegisterComponentFields class Camera : public Component {
 	public:
 		Camera();
 		EditorField float fov = 90.0f;

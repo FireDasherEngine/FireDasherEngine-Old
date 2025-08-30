@@ -25,8 +25,9 @@ static std::string format(const std::string& name) {
 
 std::string ComponentRegistry::GenerateGetInfoFunctionFromHeaderSource(const std::string& source) {
 	std::stringstream the;
+	//the << "/* Auto generated code, do not modify */ ";
 
-	std::regex classRegex(R"(RegisterComponent\s+class\s+(\w+)\s*:\s*public\s+\w+\s*\{([^]*?)\};)");
+	std::regex classRegex(R"(RegisterComponent\s+class\s+(\w+)\s*:\s*public\s+\w+\s*\{([\s\S]*)\};)");
 	std::smatch classMatch;
 	if (std::regex_search(source, classMatch, classRegex)) {
 		std::string name = classMatch[1].str();
@@ -44,17 +45,22 @@ std::string ComponentRegistry::GenerateGetInfoFunctionFromHeaderSource(const std
 		}
 
 		the << "}};}";
-	}
-	return the.str();
-}
-
-/*ComponentTypeInfo Camera::GetInfo() const {
-	return
-	{ "Camera",
-		{
-			{"Field of View", InputType::Float, offsetof(Camera, fov)},
-			{"Near Plane", InputType::Float, offsetof(Camera, nearPlane), 0.01f},
-			{"Far Plane", InputType::Float, offsetof(Camera, farPlane), 0.01f},
+		
+		//std::regex deleteOldGetInfoRegex(R"(/\* Auto generated code, do not modify \*/\s*?ComponentTypeInfo\s+?GetInfo\s*?\(\)\s*?const\s+?override\s*?\{[^]*?;\s*?\})");
+		//std::regex deleteOldGetInfoRegex(R"(/\*Auto generated code 0x274317\*/[\s\S]*?/\*End0x274317\*/)");
+		/*std::string updated = source;
+		std::smatch deleteOldGetInfoMatch;
+		if (std::regex_search(body, deleteOldGetInfoMatch, deleteOldGetInfoRegex)) {
+			std::cout << "Found existing get info, replacing\n";
+			updated.replace(classMatch.position(2), classMatch.length(2), std::regex_replace(body, deleteOldGetInfoRegex, the.str()));
+		} else {
+			std::cout << "Did not find existing get info, adding\n";
+			updated.replace(classMatch.position(2), classMatch.length(2), body + "\n\n" + the.str());
 		}
-	};
-}*/
+		
+		return updated;*/
+	}
+
+	return the.str();
+	//return source;
+}

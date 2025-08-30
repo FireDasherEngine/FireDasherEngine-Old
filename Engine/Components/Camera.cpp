@@ -12,3 +12,4 @@ Camera::Camera() {}
 		};
 }*/
 //ComponentTypeInfo Camera::GetInfo()const{return{"Camera",{{"Fov",InputType::Float,offsetof(Camera,fov)},{"Near Plane",InputType::Float,offsetof(Camera,nearPlane)},{"Far Plane",InputType::Float,offsetof(Camera,farPlane)},}};}
+RegisterComponent(Camera);

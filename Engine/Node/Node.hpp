@@ -2,20 +2,28 @@
 
 #include "Transform.hpp"
 #include "Components/Component.hpp"
+#include "Scene.hpp"
 #include <string>
 #include <map>
 #include <vector>
 
 class Component;
+class Scene;
 
 class Node {
 	public:
-		// Creates an empty object named "NewObject".
+		// Creates an empty object named "NewObject" without a scene.
 		Node();
-		// Creates an empty object with a name.
+		// Creates an empty object named "NewObject" with a scene.
+		Node(Scene* scene);
+		// Creates an empty object with a name without a scene.
 		Node(const std::string& name);
-		// Creates an empty object with a name then parents it.
+		// Creates an empty object with a name with a scene.
+		Node(const std::string& name, Scene* scene);
+		// Creates an empty object with a name then parents it, and sets it's scene to the parent's scene.
 		Node(const std::string& name, Node* parent);
+		// Creates an empty object named "NewObject" then parents it, and sets it's scene to the parent's scene.
+		Node(Node* parent);
 
 		// Deletes the node and all its children.
 		void Destroy();
@@ -49,4 +57,5 @@ class Node {
 		std::vector<Component*> components;
 		std::vector<Node*> children;
 		Node* parent = nullptr;
+		Scene* scene = nullptr;
 }; 
