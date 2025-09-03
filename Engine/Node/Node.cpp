@@ -17,12 +17,17 @@ Node::Node(Node* parent) : transform((0.0f), (0.0f), (1.0f)), name("NewObject"),
 	scene->AllNodes.push_back(this);
 }
 
+Node::~Node() {
+	for (Component* component : components) {
+		delete component;
+	}
+	for (Node* child : children) {
+		delete child;
+	}
+}
+
 void Node::Destroy() {
-	parent->RemoveChild(this);
-	if (!children.empty())
-		for (Node* child : GetDescendants()) {
-			delete child; // Manual memory manangement with raw pointers is very important!!!!
-		}
+	if (parent) parent->RemoveChild(this);
 	delete this;
 }
 

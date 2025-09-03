@@ -25,6 +25,8 @@ class Node {
 		// Creates an empty object named "NewObject" then parents it, and sets it's scene to the parent's scene.
 		Node(Node* parent);
 
+		~Node();
+
 		// Deletes the node and all its children.
 		void Destroy();
 

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <filesystem>
 
 #include <GL/glew.h>
 
@@ -36,6 +37,7 @@ class EditorApp {
 		void InitScene();
 
 		void renderObjectHierarchy(Node* object);
+		void renderProjectFolderHierarchy(const std::filesystem::path& path);
 
 		void CameraMoveControls();
 		void NodeMenu();
@@ -47,18 +49,29 @@ class EditorApp {
 		void GuiRenderProjectWindow();
 		void GuiRenderSceneViewport();
 		void GuiRenderGameViewport();
+		void GuiRenderDebugWindow();
 
-		GLFWwindow* window;
+		GLFWwindow* window = nullptr;
 
-		bool playing;
+		bool playing = false;
 
-		Scene* scene;
-		Viewport* sceneViewport;
-		Viewport* gameViewport;
+		Scene* scene = nullptr;
+		Viewport* sceneViewport = nullptr;
+		Viewport* gameViewport = nullptr;
 
 		Node* selectedObject = nullptr;
-		bool isShowingObjectRenamingWindow = false;
-		std::string objectRenamingWindowInputText = "";
+		/*bool isShowingObjectRenamingWindow = false;
+		std::string objectRenamingWindowInputText = "";*/
 		bool isEatingMouse = false;
-		double mouseLockedPosX, mouseLockedPosY;
+		double mouseLockedPosX = 0.0, mouseLockedPosY = 0.0;
+
+		std::string projectCreationWindowProjectsFolderSelectionText = "";
+		std::string projectCreationWindowNewProjectNameInputText = "";
+
+		std::filesystem::path projectFolder = "";
+		std::filesystem::path projectFolderCurrentlySelected = "";
+		bool showingInvalidFolderMessage = false;
+
+		float lastTime = 0.0;
+		float deltaTime = 0.0;
 };

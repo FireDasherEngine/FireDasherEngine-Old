@@ -11,7 +11,7 @@ RegisterComponentFields class Camera : public Component {
 		int viewportWidth = 800, viewportHeight = 600;
 
 		//ComponentTypeInfo GetInfo() const override;
-		ComponentTypeInfo GetInfo()const override{return{"Camera",{{"Fov",InputType::Float,offsetof(Camera,fov)},{"Near Plane",InputType::Float,offsetof(Camera,nearPlane)},{"Far Plane",InputType::Float,offsetof(Camera,farPlane)},}};}
+		ComponentTypeInfo GetInfo()const override{return{"Camera",{{"Fov",InputType::Float,offsetof(Camera,fov)},{"Near Plane",InputType::Float,offsetof(Camera,nearPlane),0.1f},{"Far Plane",InputType::Float,offsetof(Camera,farPlane)},}};}
 };
 
 /*

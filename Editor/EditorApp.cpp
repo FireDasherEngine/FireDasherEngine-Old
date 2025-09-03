@@ -38,6 +38,8 @@ void EditorApp::Init() {
 	ImFontConfig iconFontConfig;
 	iconFontConfig.MergeMode = true;
 	io.Fonts->AddFontFromFileTTF("FontAwesome.otf", 12.f * dpiScale, &iconFontConfig);
+
+	lastTime = (float)glfwGetTime();
 }
 
 void EditorApp::InitScene() {
@@ -97,6 +99,9 @@ void EditorApp::InitScene() {
 void EditorApp::Start() {
 	InitScene();
 	while (!glfwWindowShouldClose(window)) {
+		float currentTime = (float)glfwGetTime();
+		deltaTime = currentTime - lastTime;
+
 		glfwPollEvents();
 
 		// GUI
@@ -119,10 +124,14 @@ void EditorApp::Start() {
 			GuiRenderSceneViewport();
 			GuiRenderGameViewport();
 
+			GuiRenderDebugWindow();
+
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
+
+		lastTime = currentTime;
 	}
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -148,18 +157,23 @@ void EditorApp::NodeMenu() {
 			selectedObject->Destroy();
 			selectedObject = nullptr;
 		}
-		if (ImGui::MenuItem("Rename")) {
-			isShowingObjectRenamingWindow = true;
-		}
 	}
 }
 
 void EditorApp::GuiRenderMenuBar() {
+	bool shouldOpenTheThing = false;
+	bool shouldOpenTheThing2 = false;
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
-			ImGui::MenuItem("New", "Ctrl+N");
-			ImGui::MenuItem("Open", "Ctrl+O");
-			ImGui::MenuItem("Save", "Ctrl+S");
+			if (ImGui::MenuItem("New", "Ctrl+N")) {
+				shouldOpenTheThing = true;
+			}
+			if (ImGui::MenuItem("Open", "Ctrl+O")) {
+				shouldOpenTheThing2 = true;
+			}
+			if (ImGui::MenuItem("Save", "Ctrl+S")) {
+
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Window")) {
@@ -187,9 +201,12 @@ void EditorApp::GuiRenderMenuBar() {
 
 		ImGui::EndMainMenuBar();
 	}
+	if (shouldOpenTheThing) ImGui::OpenPopup("Create new project");
+	if (shouldOpenTheThing2) ImGui::OpenPopup("Open existing project");
 }
 
 void EditorApp::GuiRenderPopupWindows() {
+	/* Replaced by the textbox in the inspector
 	if (isShowingObjectRenamingWindow) {
 		if (ImGui::Begin("Rename object to...")) {
 			bool entered = ImGui::InputText("New Node Name", &objectRenamingWindowInputText, ImGuiInputTextFlags_EnterReturnsTrue);
@@ -199,6 +216,61 @@ void EditorApp::GuiRenderPopupWindows() {
 				objectRenamingWindowInputText = "";
 			}
 		} ImGui::End();
+	}*/
+	if (ImGui::BeginPopupModal("Create new project", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Projects Folder:");
+		ImGui::InputText("##ProjectsFolderSelector", &projectCreationWindowProjectsFolderSelectionText);
+		ImGui::Text("New Project Name:");
+		ImGui::InputText("##NewProjectNameInput", &projectCreationWindowNewProjectNameInputText);
+		if (!projectCreationWindowProjectsFolderSelectionText.empty() && !std::filesystem::is_directory(projectCreationWindowProjectsFolderSelectionText)) ImGui::Text("(%s will be created)", std::filesystem::path(projectCreationWindowProjectsFolderSelectionText).filename().string().c_str());
+		if (ImGui::Button("Create Project")) {
+			std::filesystem::path projectFolderPath = std::filesystem::path(projectCreationWindowProjectsFolderSelectionText) / std::filesystem::path(projectCreationWindowNewProjectNameInputText);
+			std::filesystem::create_directories(projectFolderPath);
+			projectFolder = projectFolderPath;
+			ImGui::CloseCurrentPopup();
+
+			projectCreationWindowProjectsFolderSelectionText = "";
+			projectCreationWindowNewProjectNameInputText = "";
+			showingInvalidFolderMessage = false;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel")) {
+			ImGui::CloseCurrentPopup();
+
+			projectCreationWindowProjectsFolderSelectionText = "";
+			projectCreationWindowNewProjectNameInputText = "";
+			showingInvalidFolderMessage = false;
+		}
+
+		ImGui::EndPopup();
+	}
+	if (ImGui::BeginPopupModal("Open existing project", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Project Folder:");
+		ImGui::InputText("##ProjectsFolderSelector", &projectCreationWindowProjectsFolderSelectionText);
+		if (showingInvalidFolderMessage) ImGui::Text("Invalid project folder!!!");
+		if (ImGui::Button("Open Project")) {
+			std::filesystem::path projectFolderPath(projectCreationWindowProjectsFolderSelectionText);
+			if (std::filesystem::is_directory(projectFolderPath)) {
+				projectFolder = projectFolderPath;
+				ImGui::CloseCurrentPopup();
+
+				projectCreationWindowProjectsFolderSelectionText = "";
+				projectCreationWindowNewProjectNameInputText = "";
+				showingInvalidFolderMessage = false;
+			} else {
+				showingInvalidFolderMessage = true;
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel")) {
+			ImGui::CloseCurrentPopup();
+
+			projectCreationWindowProjectsFolderSelectionText = "";
+			projectCreationWindowNewProjectNameInputText = "";
+			showingInvalidFolderMessage = false;
+		}
+
+		ImGui::EndPopup();
 	}
 }
 
@@ -230,7 +302,11 @@ void EditorApp::renderObjectHierarchy(Node* object) {
 
 void EditorApp::GuiRenderHierarchyWindow() {
 	if (ImGui::Begin("Hierarchy")) {
-		renderObjectHierarchy(scene->RootNode);
+		if (scene) {
+			renderObjectHierarchy(scene->RootNode);
+		} else {
+			ImGui::Text("No scene!!!!");
+		}
 	} ImGui::End();
 }
 
@@ -248,9 +324,7 @@ void EditorApp::GuiRenderInspectorWindow() {
 
 			for (Component* component : selectedObject->components) {
 				ComponentTypeInfo info = component->GetInfo();
-				ImGui::PushID(component);
 				ImGui::Text(info.name.c_str());
-				ImGui::PopID();
 				for (const ComponentFieldInfo& field : info.fields) {
 					void* fieldptr = (char*)component + field.offset;
 					ImGui::PushID(fieldptr);
@@ -298,16 +372,35 @@ void EditorApp::GuiRenderInspectorWindow() {
 				ImGui::ColorEdit3("Color", &meshRenderer->material->color.x, ImGuiColorEditFlags_Float);
 				ImGui::Separator();
 			}*/
-		}
-		else {
+		} else {
 			ImGui::Text("Nothing Selected!");
 		}
 	} ImGui::End();
 }
 
+void EditorApp::renderProjectFolderHierarchy(const std::filesystem::path& path) {
+	for (const auto& entry : std::filesystem::directory_iterator(path)) {
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+		if (entry.path() == projectFolderCurrentlySelected) flags |= ImGuiTreeNodeFlags_Selected;
+		if (!entry.is_directory()) flags |= ImGuiTreeNodeFlags_Leaf;
+		bool treeNode = ImGui::TreeNodeEx(entry.path().filename().string().c_str(), flags);
+		if (ImGui::IsItemClicked()) {
+			projectFolderCurrentlySelected = entry.path();
+		}
+		if (treeNode) {
+			if (entry.is_directory()) renderProjectFolderHierarchy(entry.path());
+			ImGui::TreePop();
+		}
+	}
+}
+
 void EditorApp::GuiRenderProjectWindow() {
 	if (ImGui::Begin("Project")) {
-		ImGui::Text("No project!!! Create one using File>New or Ctrl+N");
+		if (projectFolder.empty()) {
+			ImGui::Text("No project!!! Create one using File>New or Ctrl+N");
+		} else {
+			renderProjectFolderHierarchy(projectFolder);
+		}
 	} ImGui::End();
 }
 
@@ -333,16 +426,16 @@ void EditorApp::CameraMoveControls() {
 		t.rotation.y += ((float)mousePosX - (float)mouseLockedPosX) * 0.5f;
 		Vector3 moveAngleZ = { sin(t.rotation.y * rad), -sin(t.rotation.x * rad), cos(t.rotation.y * rad) };
 		if (ImGui::IsKeyDown(ImGuiKey_W)) {
-			t.position += moveAngleZ * 0.05f;
+			t.position += moveAngleZ * 8.f * deltaTime;
 		}
 		if (ImGui::IsKeyDown(ImGuiKey_S)) {
-			t.position += moveAngleZ * -0.05f;
+			t.position += moveAngleZ * -8.f * deltaTime;
 		}
 		if (ImGui::IsKeyDown(ImGuiKey_D)) {
-			t.position += Vector3::cross({ 0.0f, 1.0f, 0.0f }, moveAngleZ) * 0.05f;
+			t.position += Vector3::cross({ 0.0f, 1.0f, 0.0f }, moveAngleZ) * 8.f * deltaTime;
 		}
 		if (ImGui::IsKeyDown(ImGuiKey_A)) {
-			t.position += Vector3::cross({ 0.0f, 1.0f, 0.0f }, moveAngleZ) * -0.05f;
+			t.position += Vector3::cross({ 0.0f, 1.0f, 0.0f }, moveAngleZ) * -8.f * deltaTime;
 		}
 	}
 	if (isEatingMouse && ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
@@ -376,5 +469,12 @@ void EditorApp::GuiRenderGameViewport() {
 		gameViewport->Render();
 
 		ImGui::Image((ImTextureID)gameViewport->texture, wsize, ImVec2(0, 1), ImVec2(1, 0));
+	} ImGui::End();
+}
+
+void EditorApp::GuiRenderDebugWindow() {
+	if (ImGui::Begin("Debug")) {
+		ImGui::Text("Frame Time: %f MS", deltaTime * 1000.f);
+		ImGui::Text("FPS: %f", 1.f / deltaTime);
 	} ImGui::End();
 }
