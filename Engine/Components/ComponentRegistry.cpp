@@ -25,7 +25,6 @@ static std::string format(const std::string& name) {
 
 std::string ComponentRegistry::GenerateGetInfoFunctionFromHeaderSource(const std::string& source) {
 	std::stringstream the;
-	//the << "/* Auto generated code, do not modify */ ";
 
 	std::regex classRegex(R"(RegisterComponent\s+class\s+(\w+)\s*:\s*public\s+\w+\s*\{([\s\S]*)\};)");
 	std::smatch classMatch;

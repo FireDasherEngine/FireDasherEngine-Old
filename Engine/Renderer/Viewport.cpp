@@ -46,7 +46,7 @@ void Viewport::ResizeFB(GLsizei wwidth, GLsizei hheight) {
 void Viewport::Render() const {
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-	Camera*& camera = renderer->overrideCamera ? renderer->overrideCamera : renderer->scene->MainCamera;
+	Camera*& camera = renderer->overrideCamera ? renderer->overrideCamera : renderer->scene->mainCamera;
 
 	camera->viewportWidth = width;
 	camera->viewportHeight = height;

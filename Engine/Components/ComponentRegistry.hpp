@@ -12,7 +12,7 @@ class Component;
 
 enum class InputType {
 	// You should NEVER use the Nothing type!!
-	Nothing,
+	Nothing = 0,
 	Float,
 	Int,
 	Bool,
@@ -35,11 +35,6 @@ struct ComponentTypeInfo {
 
 class ComponentRegistry {
 	public:
-		/* Replaced by Component::GetInfo static void Register(const std::string& name, const std::vector<ComponentFieldInfo>& fields) {
-			components[ name ] = ComponentTypeInfo{ name, fields };
-		}
-		static std::map<std::string, ComponentTypeInfo> components;*/
-
 		static std::string GenerateGetInfoFunctionFromHeaderSource(const std::string& source);
 		template<typename T> static bool RegistryRegisterComponent(const std::string& name) {
 			Get()[name] = [](){ return new T(); };

@@ -14,9 +14,8 @@ RegisterComponentFields class MeshRenderer : public Component {
 
 		void Render(Shader* shader);
 
-		EditorField std::string MeshPath;
-		EditorField std::string MaterialPath;
+		EditorField std::string meshPath;
+		EditorField std::string materialPath;
 
-		//ComponentTypeInfo GetInfo() const override;
-		ComponentTypeInfo GetInfo()const override { return{ "Mesh Renderer",{{"Mesh Path",InputType::String,offsetof(MeshRenderer,MeshPath)},{"Material Path",InputType::String,offsetof(MeshRenderer,MaterialPath)},} }; }
+		ComponentTypeInfo GetInfo()const override { return{ "Mesh Renderer",{{"Mesh Path",InputType::String,offsetof(MeshRenderer,meshPath)},{"Material Path",InputType::String,offsetof(MeshRenderer,materialPath)},} }; }
 };

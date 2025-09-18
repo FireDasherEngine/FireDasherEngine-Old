@@ -4,17 +4,17 @@ Node::Node() : transform((0.0f), (0.0f), (1.0f)), name("NewObject") {}
 Node::Node(const std::string& name) : transform((0.0f), (0.0f), (1.0f)), name(name) {}
 Node::Node(const std::string& name, Node* parent) : transform((0.0f), (0.0f), (1.0f)), name(name), parent(parent), scene(parent->scene) {
 	parent->AddChild(this);
-	scene->AllNodes.push_back(this);
+	scene->allNodes.push_back(this);
 }
 Node::Node(Scene* scene) : transform((0.0f), (0.0f), (1.0f)), name("NewObject"), scene(scene) {
-	scene->AllNodes.push_back(this);
+	scene->allNodes.push_back(this);
 }
 Node::Node(const std::string& name, Scene* scene) : transform((0.0f), (0.0f), (1.0f)), name(name), scene(scene) {
-	scene->AllNodes.push_back(this);
+	scene->allNodes.push_back(this);
 }
 Node::Node(Node* parent) : transform((0.0f), (0.0f), (1.0f)), name("NewObject"), parent(parent), scene(parent->scene) {
 	parent->AddChild(this);
-	scene->AllNodes.push_back(this);
+	scene->allNodes.push_back(this);
 }
 
 Node::~Node() {
@@ -35,14 +35,7 @@ void Node::AddComponent(Component* component) {
 	components.push_back(component);
 	component->object = this;
 }
-/*template<typename T> T* Node::GetComponent() {
-	for (Component* component : components) {
-		if (T* tcomponent = dynamic_cast<T*>(component); tcomponent) {
-			return tcomponent;
-		}
-	}
-	return nullptr;
-}*/
+
 void Node::AddChild(Node* child) {
 	if (child->parent) {
 		child->parent->RemoveChild(child);

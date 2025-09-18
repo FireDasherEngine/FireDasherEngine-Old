@@ -15,7 +15,7 @@ class Mesh {
 		Mesh(const char* path);
 		~Mesh();
 
-		void Use() const;
+		void Draw() const;
 
 		std::vector<Vector3> vertices;
 		std::vector<Vector2> uv;

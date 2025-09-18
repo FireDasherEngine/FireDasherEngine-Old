@@ -44,44 +44,6 @@ Mesh::Mesh(const std::vector<Vector3>& vertices, const std::vector<Vector2>& uv,
 	init();
 }
 
-/*Mesh::Mesh(const std::string& path) {
-	std::ifstream file(path);
-	
-	std::vector<Vector3> objVertices;
-	std::vector<Vector2> objUv;
-	std::vector<Vector3> objNormals;
-	std::vector<uint> objTriangles;
-
-	std::string line;
-	while (std::getline(file, line)) {
-		std::stringstream ss(line);
-		std::string type;
-		ss >> type;
-
-		if (type == "v") {
-			Vector3 v;
-			ss >> v.x >> v.y >> v.z;
-			objVertices.emplace_back(v);
-		} else if (type == "vt") {
-			Vector2 vt;
-			ss >> vt.x >> vt.y;
-			objUv.emplace_back(vt);
-		} else if (type == "vn") {
-			Vector3 vn;
-			ss >> vn.x >> vn.y >> vn.z;
-			objNormals.emplace_back(vn);
-		} else if (type == "f") {
-			std::string facePart;
-			while (ss >> facePart) {
-				uint firstSlash = facePart.find('/');
-				uint secondSlash = facePart.find('/', firstSlash + 1);
-
-
-			}
-		}
-	}
-}*/
-
 Mesh::Mesh(const char* path) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
@@ -149,6 +111,7 @@ Mesh::~Mesh() {
 	VAO = 0;
 }
 
-void Mesh::Use() const {
+void Mesh::Draw() const {
 	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, (GLsizei)triangles.size(), GL_UNSIGNED_INT, (void*)0);
 }

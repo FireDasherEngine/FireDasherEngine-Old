@@ -30,10 +30,13 @@ constexpr auto rad = 0.01745329251994329576923690768489f;
 class EditorApp {
 	public:
 		EditorApp() {};
-		void Init();
-		void Start();
+		void Run();
 
 	private:
+		void Init();
+		void Start();
+		void CleanUp();
+
 		void InitScene();
 
 		void renderObjectHierarchy(Node* object);
@@ -60,8 +63,6 @@ class EditorApp {
 		Viewport* gameViewport = nullptr;
 
 		Node* selectedObject = nullptr;
-		/*bool isShowingObjectRenamingWindow = false;
-		std::string objectRenamingWindowInputText = "";*/
 		bool isEatingMouse = false;
 		double mouseLockedPosX = 0.0, mouseLockedPosY = 0.0;
 

@@ -1,5 +1,11 @@
 #include "EditorApp.hpp"
 
+void EditorApp::Run() {
+	Init();
+	Start();
+	CleanUp();
+}
+
 void EditorApp::Init() {
 	if (!glfwInit()) {
 		return;
@@ -40,26 +46,27 @@ void EditorApp::Init() {
 	io.Fonts->AddFontFromFileTTF("FontAwesome.otf", 12.f * dpiScale, &iconFontConfig);
 
 	lastTime = (float)glfwGetTime();
+
+	InitScene();
 }
 
 void EditorApp::InitScene() {
 	// Scene Setup
 
 	scene = new Scene();
-	//scene->LoadScene("./Sdasfh.scene");
 
 	Node* rootNode = new Node("Game", scene);
 
-	scene->RootNode = rootNode;
+	scene->rootNode = rootNode;
 
-	Node* theobject = new Node("Awesome cube!!", scene->RootNode);
+	Node* theobject = new Node("Awesome cube!!", scene->rootNode);
 	theobject->AddComponent(new MeshRenderer(new Mesh("./Portal2Cube.glb"), new Material("./Metal_box.png")));
 	theobject->transform.position = Vector3(0, 0, 5);
 
-	Node* theobject2 = new Node("Epic cube", scene->RootNode);
+	Node* theobject2 = new Node("Epic cube", scene->rootNode);
 	theobject2->transform.position = Vector3(0, 0, -5);
 
-	Node* camera = new Node("Main Camera", scene->RootNode);
+	Node* camera = new Node("Main Camera", scene->rootNode);
 	Camera* gameCameracomp = new Camera();
 	camera->AddComponent(gameCameracomp);
 	camera->transform.position = Vector3(0, 0, -3);
@@ -70,15 +77,13 @@ void EditorApp::InitScene() {
 	Camera* sceneCameracomp = new Camera();
 	sceneCamera->AddComponent(sceneCameracomp);
 	sceneCamera->transform.position = Vector3(0, 0, -3);
-	sceneCamera->parent = scene->RootNode; // One way scene->RootNode reference, scene->RootNode doesn't know sceneCamera but sceneCamera knows scene->RootNode
+	sceneCamera->parent = scene->rootNode; // One way scene->RootNode reference, scene->RootNode doesn't know sceneCamera but sceneCamera knows scene->RootNode. This is a bad and ugly and messy solution but it works.
 
-	scene->MainCamera = gameCameracomp;
+	scene->mainCamera = gameCameracomp;
 
-	//scene->CalculateAllNodes();
+	//scene->SaveScene("./EpicScene.jscene");
 
-	//scene->SaveScene("./Sdasfh.scene");
-
-	//scene->LoadScene("./Sdasfh.scene");
+	//scene->LoadScene("./EpicScene.jscene");
 
 	// Editor
 	Renderer3D* renderer = new Renderer3D();
@@ -97,7 +102,6 @@ void EditorApp::InitScene() {
 }
 
 void EditorApp::Start() {
-	InitScene();
 	while (!glfwWindowShouldClose(window)) {
 		float currentTime = (float)glfwGetTime();
 		deltaTime = currentTime - lastTime;
@@ -133,6 +137,9 @@ void EditorApp::Start() {
 
 		lastTime = currentTime;
 	}
+}
+
+void EditorApp::CleanUp() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
@@ -143,11 +150,11 @@ void EditorApp::Start() {
 
 void EditorApp::NodeMenu() {
 	if (ImGui::MenuItem("New Empty")) {
-		Node* newObject = new Node("New Node", selectedObject ? selectedObject : scene->RootNode);
+		Node* newObject = new Node("New Node", selectedObject ? selectedObject : scene->rootNode);
 		selectedObject = newObject;
 	}
 	if (ImGui::MenuItem("New Cube")) {
-		Node* newObject = new Node("New Cube", selectedObject ? selectedObject : scene->RootNode);
+		Node* newObject = new Node("New Cube", selectedObject ? selectedObject : scene->rootNode);
 		newObject->AddComponent(new MeshRenderer(new Mesh("./Cube.obj"), new Material()));
 		selectedObject = newObject;
 	}
@@ -206,17 +213,6 @@ void EditorApp::GuiRenderMenuBar() {
 }
 
 void EditorApp::GuiRenderPopupWindows() {
-	/* Replaced by the textbox in the inspector
-	if (isShowingObjectRenamingWindow) {
-		if (ImGui::Begin("Rename object to...")) {
-			bool entered = ImGui::InputText("New Node Name", &objectRenamingWindowInputText, ImGuiInputTextFlags_EnterReturnsTrue);
-			if (ImGui::Button("Rename") || entered) {
-				isShowingObjectRenamingWindow = false;
-				selectedObject->name = objectRenamingWindowInputText;
-				objectRenamingWindowInputText = "";
-			}
-		} ImGui::End();
-	}*/
 	if (ImGui::BeginPopupModal("Create new project", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Projects Folder:");
 		ImGui::InputText("##ProjectsFolderSelector", &projectCreationWindowProjectsFolderSelectionText);
@@ -303,7 +299,7 @@ void EditorApp::renderObjectHierarchy(Node* object) {
 void EditorApp::GuiRenderHierarchyWindow() {
 	if (ImGui::Begin("Hierarchy")) {
 		if (scene) {
-			renderObjectHierarchy(scene->RootNode);
+			renderObjectHierarchy(scene->rootNode);
 		} else {
 			ImGui::Text("No scene!!!!");
 		}
@@ -366,12 +362,6 @@ void EditorApp::GuiRenderInspectorWindow() {
 				}
 				ImGui::EndPopup();
 			}
-
-			/*if (auto meshRenderer = selectedObject->GetComponent<MeshRenderer>(); meshRenderer) {
-				ImGui::Text("Mesh Renderer");
-				ImGui::ColorEdit3("Color", &meshRenderer->material->color.x, ImGuiColorEditFlags_Float);
-				ImGui::Separator();
-			}*/
 		} else {
 			ImGui::Text("Nothing Selected!");
 		}
@@ -418,8 +408,6 @@ void EditorApp::CameraMoveControls() {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
 		glfwSetCursorPos(window, mouseLockedPosX, mouseLockedPosY);
-
-		//std::cout << ImGui::GetMousePos().x << ", " << ImGui::GetMousePos().y << "; " << io.MouseDelta.x << ", " << io.MouseDelta.y << "\n";
 
 		Transform& t = sceneViewport->renderer->overrideCamera->object->transform;
 		t.rotation.x += ((float)mousePosY - (float)mouseLockedPosY) * 0.5f;

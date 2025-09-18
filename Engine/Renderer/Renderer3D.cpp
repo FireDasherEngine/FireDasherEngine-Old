@@ -12,7 +12,7 @@ Renderer3D::~Renderer3D() {
 	shader = nullptr;
 }
 void Renderer3D::Render() {
-	Camera*& camera = overrideCamera ? overrideCamera : scene->MainCamera;
+	Camera*& camera = overrideCamera ? overrideCamera : scene->mainCamera;
 
 	glViewport(0, 0, camera->viewportWidth, camera->viewportHeight);
 
@@ -29,7 +29,7 @@ void Renderer3D::Render() {
 	shader->SetMat4("view", view);
 	shader->SetMat4("projection", projection);
 	
-	for (Node* object : scene->AllNodes) {
+	for (Node* object : scene->allNodes) {
 		if (MeshRenderer* meshRenderer = object->GetComponent<MeshRenderer>(); meshRenderer) {
 			meshRenderer->Render(shader);
 		}
